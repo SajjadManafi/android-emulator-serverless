@@ -6,3 +6,22 @@ android emulator serverless project
 
 - serverless
 - serverless offline
+- AWS Lambda for Go
+
+
+### install
+
+```
+npm install
+```
+
+### build
+
+```
+make build
+```
+
+### run service
+```
+make start
+```

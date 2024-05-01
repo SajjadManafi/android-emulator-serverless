@@ -1,0 +1,26 @@
+service: android-emulator-serverless
+
+frameworkVersion: ^3.38.0
+
+plugins:
+  - serverless-offline
+
+provider:
+  name: aws
+  runtime: go1.x
+  stage: local
+
+custom:
+  serverless-offline:
+    noPrependStageInUrl: true
+
+functions:
+  ping:
+    handler: bin/ping
+    package:
+      include:
+        - bin/ping
+    events:
+      - http:
+          path: ping
+          method: get
