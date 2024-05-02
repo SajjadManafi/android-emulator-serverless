@@ -1,0 +1,9 @@
+serviceName: android-emulator-serverless
+development: true
+auth:
+  secret_key: c3c1566b-e5e3-4eb5-aef-3sds690fe
+redis:
+  address: localhost:6379
+  password: ""
+  db: 0
+  poolSize: 300

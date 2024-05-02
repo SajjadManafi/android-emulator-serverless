@@ -9,10 +9,13 @@ android emulator serverless project
 - AWS Lambda for Go
 
 
-### install
+### install dependencies
 
 ```
+npm install -g serverless
 npm install
+go mod tidy
+docker pull public.ecr.aws/lambda/go
 ```
 
 ### build
