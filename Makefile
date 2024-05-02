@@ -7,3 +7,6 @@ build: clean
 
 start:
 	sudo sls offline --useDocker start --host 0.0.0.0
+
+redis:
+	docker run --name redis-db -d -p 6379:6379 redis 

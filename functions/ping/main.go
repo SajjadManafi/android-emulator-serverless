@@ -22,11 +22,18 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 
 	if DebugCounter == 0 {
 		DebugCounter++
-		UserService.RegisterUser(context.Background(), redis.User{
+		err := UserService.RegisterUser(context.Background(), redis.User{
 			Name:     "User-1",
 			UserName: "user1",
 			Password: "password",
 		})
+
+		if err != nil {
+			return Response{
+				StatusCode: 500,
+				Body:       err.Error(),
+			}, nil
+		}
 
 		return Response{
 			StatusCode: 200,
@@ -82,6 +89,16 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to init token maker: %v", err)
 	}
+
+	// log redis ping
+	_, err = redisClient.Ping(context.Background()).Result()
+	if err != nil {
+		log.Fatalf("failed to ping redis: %v", err)
+	} else {
+		log.Println("redis pinged successfully")
+	}
+
+	defer redisClient.Close()
 
 	lambda.Start(Handler)
 }
