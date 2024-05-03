@@ -28,3 +28,24 @@ make build
 ```
 make start
 ```
+
+### simple ping request
+
+```
+ curl http://0.0.0.0.0:3000/ping
+```
+
+
+### simple register request
+```
+curl -X POST http://0.0.0.0:3000/register \
+     -H "Content-Type: application/json" \
+     -d '{"name":"sajjad","username":"sajjadma","password":"testpass"}'
+```
+
+### simple login request
+```
+curl -i -X POST http://0.0.0.0:3000/login \
+     -H "Content-Type: application/json" \
+     -d '{"username":"sajjadma","password":"testpass"}'
+```
