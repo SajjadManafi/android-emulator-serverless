@@ -32,7 +32,7 @@ make start
 ### simple ping request
 
 ```
- curl http://0.0.0.0.0:3000/ping
+ curl http://0.0.0.0:3000/ping
 ```
 
 
