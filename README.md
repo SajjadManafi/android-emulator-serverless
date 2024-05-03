@@ -4,9 +4,9 @@ android emulator serverless project
 
 ### dependencies
 
-- serverless
-- serverless offline
-- AWS Lambda for Go
+- [serverless](https://www.npmjs.com/package/serverless)
+- [serverless offline](https://www.npmjs.com/package/serverless-offline)
+- [AWS Lambda for Go](https://github.com/aws/aws-lambda-go)
 
 
 ### install dependencies
@@ -16,7 +16,7 @@ npm install -g serverless
 npm install
 go mod tidy
 docker pull public.ecr.aws/lambda/go
-make redis
+make redis-up
 ```
 
 ### build
