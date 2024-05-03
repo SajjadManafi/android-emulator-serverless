@@ -1,12 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
-	"os"
-	"os/exec"
-	"strconv"
+	"net/http"
 	"time"
 
 	"github.com/SajjadManafi/android-emulator-serverless/internal/config"
@@ -104,20 +104,15 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 		}, nil
 	}
 
-	// Construct the Docker command
-	portStr := strconv.Itoa(port) // Convert port to string
-
-	cmd := exec.Command("docker", "run", "-d", "-p", portStr+":"+portStr, "-e", "EMULATOR_DEVICE="+android.DeviceName, "-e", "WEB_VNC=true", "--device", "/dev/kvm", "budtmo/docker-android:"+android.AndroidAPI)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
+	// run docker
+	err = runDockerAndroidEmulator(port, android.DeviceName, android.AndroidAPI)
 	if err != nil {
-		log.Println("Error executing command:", err)
 		return Response{
 			StatusCode: 500,
 			Body:       err.Error(),
 		}, nil
 	}
+
 	return Response{
 		StatusCode: 201,
 		Headers: map[string]string{
@@ -154,4 +149,48 @@ func main() {
 	defer redisClient.Close()
 
 	lambda.Start(Handler)
+}
+
+// AndroidConfig represents the payload to start an Android emulator
+type AndroidConfig struct {
+	Port       int    `json:"port"`
+	DeviceName string `json:"DeviceName"`
+	AndroidAPI string `json:"AndroidAPI"`
+}
+
+func runDockerAndroidEmulator(port int, deviceName string, androidAPI string) error {
+	config := AndroidConfig{
+		Port:       port,
+		DeviceName: deviceName,
+		AndroidAPI: androidAPI,
+	}
+
+	// Convert config to JSON
+	data, err := json.Marshal(config)
+	if err != nil {
+		fmt.Println("Error marshalling JSON:", err)
+		return err
+	}
+
+	// Create a new request
+	url := "http://172.17.0.1:8080/run-emulator"
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return err
+	}
+
+	// Set the content type to application/json
+	req.Header.Set("Content-Type", "application/json")
+
+	// Execute the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error executing request:", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
 }
