@@ -49,3 +49,28 @@ curl -i -X POST http://0.0.0.0:3000/login \
      -H "Content-Type: application/json" \
      -d '{"username":"sajjadma","password":"testpass"}'
 ```
+
+
+### simple register device request
+```
+curl -X POST http://0.0.0.0:3000/registerDevice \
+     -H "Content-Type: application/json" \
+     -H "Authorization:YOUR_ACCESS_TOKEN" \
+     -d '{
+           "android_api": "API_LEVEL",
+           "device_name": "DEVICE_NAME"
+         }'
+```
+
+
+### simple get device request
+```
+curl -X GET http://0.0.0.0:3000/getDevice \
+     -H "Authorization:YOUR_ACCESS_TOKEN" 
+```
+
+### simple delete device request
+```
+curl -X DELETE http://0.0.0.0:3000/deleteDevice \
+     -H "Authorization:YOUR_ACCESS_TOKEN"
+```
