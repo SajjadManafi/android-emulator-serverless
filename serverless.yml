@@ -42,3 +42,30 @@ functions:
       - http:
           path: login
           method: post
+  registerDevice:
+    handler: bin/registerDevice
+    package:
+      include:
+        - bin/registerDevice
+    events:
+      - http:
+          path: registerDevice
+          method: post
+  getDevice:
+    handler: bin/getDevice
+    package:
+      include:
+        - bin/getDevice
+    events:
+      - http:
+          path: getDevice
+          method: get
+  deleteDevice:
+    handler: bin/deleteDevice
+    package:
+      include:
+        - bin/deleteDevice
+    events:
+      - http:
+          path: deleteDevice
+          method: delete
