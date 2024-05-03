@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"os/exec"
+	"strconv"
 	"time"
 
 	"github.com/SajjadManafi/android-emulator-serverless/internal/config"
@@ -65,7 +67,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 		}, nil
 	}
 
-	// TODO: check if user has registered 
+	// TODO: check if user has registered
 
 	android = redis.Android{
 		DeviceID:       claims.Username + "-Device",
@@ -99,6 +101,20 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 			StatusCode: 500,
 			Body:       err.Error(),
 		}, nil
+	}
+
+	// Construct the Docker command
+	portStr := strconv.Itoa(port) // Convert port to string
+	dockerCmd := "docker run -d -p " + portStr + ":" + portStr + " -e EMULATOR_DEVICE=" + android.DeviceName + " -e WEB_VNC=true --device /dev/kvm --name android-container budtmo/docker-android:" + android.AndroidAPI
+
+	// Execute the Docker command
+	cmd := exec.Command("sh", "-c", dockerCmd)
+	if err := cmd.Run(); err != nil {
+		return Response{
+			StatusCode: 500,
+			Body:       err.Error(),
+		}, nil
+
 	}
 
 	return Response{
