@@ -192,5 +192,8 @@ func runDockerAndroidEmulator(port int, deviceName string, androidAPI string) er
 	}
 	defer resp.Body.Close()
 
+	log.Println("response Status:", resp.Status)
+	log.Println("emulator created successfully")
+
 	return nil
 }

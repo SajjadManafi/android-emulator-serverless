@@ -29,6 +29,8 @@ func main() {
 			return
 		}
 
+		log.Println("got android config: ", android)
+
 		portStr := android.Port
 		cmd := exec.Command("docker", "run", "-d", "-p", portStr+":"+portStr, "-e", "EMULATOR_DEVICE="+android.DeviceName, "-e", "WEB_VNC=true", "--device", "/dev/kvm", "budtmo/docker-android:"+android.AndroidAPI)
 		cmd.Stdout = os.Stdout
