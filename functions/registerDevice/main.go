@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"os"
 	"os/exec"
 	"strconv"
 	"time"
@@ -105,18 +106,18 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 
 	// Construct the Docker command
 	portStr := strconv.Itoa(port) // Convert port to string
-	dockerCmd := "docker run -d -p " + portStr + ":" + portStr + " -e EMULATOR_DEVICE=" + android.DeviceName + " -e WEB_VNC=true --device /dev/kvm --name android-container budtmo/docker-android:" + android.AndroidAPI
 
-	// Execute the Docker command
-	cmd := exec.Command("sh", "-c", dockerCmd)
-	if err := cmd.Run(); err != nil {
+	cmd := exec.Command("docker", "run", "-d", "-p", portStr+":"+portStr, "-e", "EMULATOR_DEVICE="+android.DeviceName, "-e", "WEB_VNC=true", "--device", "/dev/kvm", "budtmo/docker-android:"+android.AndroidAPI)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		log.Println("Error executing command:", err)
 		return Response{
 			StatusCode: 500,
 			Body:       err.Error(),
 		}, nil
-
 	}
-
 	return Response{
 		StatusCode: 201,
 		Headers: map[string]string{
