@@ -11,7 +11,7 @@ import (
 
 // AndroidConfig holds the configuration for the Android emulator
 type AndroidConfig struct {
-	Port       string `json:"port"`
+	Port       int    `json:"port"`
 	DeviceName string `json:"DeviceName"`
 	AndroidAPI string `json:"AndroidAPI"`
 }
@@ -31,7 +31,7 @@ func main() {
 
 		log.Println("got android config: ", android)
 
-		portStr := android.Port
+		portStr := fmt.Sprintf("%d", android.Port)
 		cmd := exec.Command("docker", "run", "-d", "-p", portStr+":"+portStr, "-e", "EMULATOR_DEVICE="+android.DeviceName, "-e", "WEB_VNC=true", "--device", "/dev/kvm", "budtmo/docker-android:"+android.AndroidAPI)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
