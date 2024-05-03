@@ -16,6 +16,7 @@ npm install -g serverless
 npm install
 go mod tidy
 docker pull public.ecr.aws/lambda/go
+make redis
 ```
 
 ### build
@@ -26,6 +27,7 @@ make build
 
 ### run service
 ```
+make start-docker-handler
 make start
 ```
 
