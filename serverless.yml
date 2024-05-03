@@ -24,3 +24,21 @@ functions:
       - http:
           path: ping
           method: get
+  register:
+    handler: bin/register
+    package:
+      include:
+        - bin/register
+    events:
+      - http:
+          path: register
+          method: post
+  login:
+    handler: bin/login
+    package:
+      include:
+        - bin/login
+    events:
+      - http:
+          path: login
+          method: post
