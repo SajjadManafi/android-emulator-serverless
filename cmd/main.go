@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -15,6 +16,7 @@ type AndroidConfig struct {
 	Port          int    `json:"port"`
 	DeviceName    string `json:"DeviceName"`
 	AndroidAPI    string `json:"AndroidAPI"`
+	Status        string `json:"status"`
 }
 
 func main() {
@@ -87,6 +89,32 @@ func main() {
 
 		// Immediately respond to the request
 		fmt.Fprintf(w, "Emulator stop and delete initiated successfully")
+	})
+
+	http.HandleFunc("/device-status", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		containerName := r.URL.Query().Get("containerName")
+		if containerName == "" {
+			http.Error(w, "Container name is required", http.StatusBadRequest)
+			return
+		}
+
+		cmd := exec.Command("docker", "exec", "-i", containerName, "cat", "device_status")
+		// Removing the '-t' option because it's not suitable for non-interactive sessions like this
+		var out bytes.Buffer
+		cmd.Stdout = &out
+		err := cmd.Run()
+		if err != nil {
+			log.Printf("Error executing command for container %s: %s", containerName, err)
+			http.Error(w, "Failed to get device status", http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Fprintf(w, "Device Status: %s", out.String())
 	})
 
 	log.Println("Server starting on port 8080...")

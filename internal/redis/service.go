@@ -21,6 +21,7 @@ type Android struct {
 	StartTimestamp int64  `json:"start_timestamp" redis:"start_timestamp"`
 	AndroidAPI     string `json:"android_api" redis:"android_api"`
 	DeviceName     string `json:"device_name" redis:"device_name"`
+	Status         string `json:"status" redis:"status"`
 }
 
 var UsedPorts = "used_ports"
@@ -42,6 +43,8 @@ func (s *AndroidService) RegisterAndroid(ctx context.Context, android Android) e
 	if exists > 0 {
 		return ErrAlreadyExists
 	}
+
+	android.Status = "pending"
 
 	// Serialize Android struct to JSON
 	androidData, err := json.Marshal(android)

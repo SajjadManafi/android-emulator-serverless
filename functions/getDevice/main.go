@@ -3,7 +3,11 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"io"
 	"log"
+	"net/http"
+	"net/url"
 
 	"github.com/SajjadManafi/android-emulator-serverless/internal/config"
 	"github.com/SajjadManafi/android-emulator-serverless/internal/redis"
@@ -59,6 +63,17 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 		}, nil
 	}
 
+	// get device status
+	status, err := getDeviceStatus(androidData.DeviceID)
+	if err != nil {
+		return Response{
+			StatusCode: 500,
+			Body:       "internal server error",
+		}, nil
+	}
+
+	androidData.Status = status
+
 	// marshal android data
 	androidDataJSON, err := json.Marshal(androidData)
 	if err != nil {
@@ -105,4 +120,28 @@ func main() {
 
 	lambda.Start(Handler)
 
+}
+
+func getDeviceStatus(containerName string) (string, error) {
+	baseURL := "http://172.17.0.1:8080/device-status" // Replace with your actual server address and port
+	params := url.Values{}
+	params.Add("containerName", containerName)
+	url := fmt.Sprintf("%s?%s", baseURL, params.Encode())
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", fmt.Errorf("error making request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("server returned non-200 status: %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("error reading response body: %w", err)
+	}
+
+	return string(body), nil
 }
