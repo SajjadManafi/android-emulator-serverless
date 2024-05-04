@@ -60,28 +60,35 @@ func main() {
 
 		log.Println("stopping android container: ", android.ContainerName)
 
-		// Stop the container
-		stopCmd := exec.Command("docker", "stop", android.ContainerName)
-		stopCmd.Stdout = os.Stdout
-		stopCmd.Stderr = os.Stderr
-		err := stopCmd.Run()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+		// Run stop and remove commands in a goroutine
+		go func(containerName string) {
+			// Stop the container
+			stopCmd := exec.Command("docker", "stop", containerName)
+			stopCmd.Stdout = os.Stdout
+			stopCmd.Stderr = os.Stderr
+			err := stopCmd.Run()
+			if err != nil {
+				log.Printf("Error stopping container %s: %s", containerName, err)
+				return
+			}
 
-		// Remove the container
-		rmCmd := exec.Command("docker", "rm", android.ContainerName)
-		rmCmd.Stdout = os.Stdout
-		rmCmd.Stderr = os.Stderr
-		err = rmCmd.Run()
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+			// Remove the container
+			rmCmd := exec.Command("docker", "rm", containerName)
+			rmCmd.Stdout = os.Stdout
+			rmCmd.Stderr = os.Stderr
+			err = rmCmd.Run()
+			if err != nil {
+				log.Printf("Error removing container %s: %s", containerName, err)
+				return
+			}
 
-		fmt.Fprintf(w, "Emulator stopped and deleted successfully")
+			log.Printf("Emulator %s stopped and deleted successfully", containerName)
+		}(android.ContainerName)
+
+		// Immediately respond to the request
+		fmt.Fprintf(w, "Emulator stop and delete initiated successfully")
 	})
+
 	log.Println("Server starting on port 8080...")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatalf("Error starting server: %s", err)
