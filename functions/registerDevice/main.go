@@ -77,6 +77,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 		StartTimestamp: time.Now().Unix(),
 		AndroidAPI:     android.AndroidAPI,
 		DeviceName:     android.DeviceName,
+		Status:         "pending",
 	}
 
 	// register android
