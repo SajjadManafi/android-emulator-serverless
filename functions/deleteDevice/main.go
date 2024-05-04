@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/SajjadManafi/android-emulator-serverless/internal/config"
 	"github.com/SajjadManafi/android-emulator-serverless/internal/redis"
@@ -58,6 +62,15 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 		}, nil
 	}
 
+	// stop docker android emulator
+	err = stopDockerAndroidEmulator(claims.Username + "-Device")
+	if err != nil {
+		return Response{
+			StatusCode: 500,
+			Body:       "internal server error",
+		}, nil
+	}
+
 	// delete device from redis
 	err = AndroidService.DeleteAndroid(ctx, claims.Username+"-Device")
 	if err != nil {
@@ -102,4 +115,49 @@ func main() {
 
 	lambda.Start(Handler)
 
+}
+
+type AndroidConfig struct {
+	ContainerName string `json:"containerName"`
+	Port          int    `json:"port"`
+	DeviceName    string `json:"DeviceName"`
+	AndroidAPI    string `json:"AndroidAPI"`
+}
+
+func stopDockerAndroidEmulator(containerName string) error {
+	config := AndroidConfig{
+		ContainerName: containerName,
+	}
+
+	// Convert config to JSON
+	data, err := json.Marshal(config)
+	if err != nil {
+		fmt.Println("Error marshalling JSON:", err)
+		return err
+	}
+
+	// Create a new request
+	url := "http://172.17.0.1:8080/stop-emulator"
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return err
+	}
+
+	// Set the content type to application/json
+	req.Header.Set("Content-Type", "application/json")
+
+	// Execute the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error executing request:", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	log.Println("response Status:", resp.Status)
+	log.Println("emulator stopped successfully")
+
+	return nil
 }
