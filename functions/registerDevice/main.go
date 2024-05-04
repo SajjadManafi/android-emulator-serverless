@@ -105,7 +105,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	}
 
 	// run docker
-	err = runDockerAndroidEmulator(port, android.DeviceName, android.AndroidAPI)
+	err = runDockerAndroidEmulator(android.DeviceID, port, android.DeviceName, android.AndroidAPI)
 	if err != nil {
 		return Response{
 			StatusCode: 500,
@@ -153,16 +153,18 @@ func main() {
 
 // AndroidConfig represents the payload to start an Android emulator
 type AndroidConfig struct {
-	Port       int    `json:"port"`
-	DeviceName string `json:"DeviceName"`
-	AndroidAPI string `json:"AndroidAPI"`
+	ContainerName string `json:"containerName"`
+	Port          int    `json:"port"`
+	DeviceName    string `json:"DeviceName"`
+	AndroidAPI    string `json:"AndroidAPI"`
 }
 
-func runDockerAndroidEmulator(port int, deviceName string, androidAPI string) error {
+func runDockerAndroidEmulator(ContainerName string, port int, deviceName string, androidAPI string) error {
 	config := AndroidConfig{
-		Port:       port,
-		DeviceName: deviceName,
-		AndroidAPI: androidAPI,
+		ContainerName: ContainerName,
+		Port:          port,
+		DeviceName:    deviceName,
+		AndroidAPI:    androidAPI,
 	}
 
 	// Convert config to JSON
