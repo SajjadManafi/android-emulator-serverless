@@ -76,3 +76,12 @@ curl -X GET http://0.0.0.0:3000/getDevice \
 curl -X DELETE http://0.0.0.0:3000/deleteDevice \
      -H "Authorization:YOUR_ACCESS_TOKEN"
 ```
+
+
+### TODO:
+
+
+- [ ] Web Interface
+- [ ] TLS
+- [ ] Emulator Auth (Reverse Proxy)
+- [ ] Edit Emulator docker images
