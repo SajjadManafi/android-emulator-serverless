@@ -85,3 +85,4 @@ curl -X DELETE http://0.0.0.0:3000/deleteDevice \
 - [ ] TLS
 - [ ] Emulator Auth (Reverse Proxy)
 - [ ] Edit Emulator docker images
+- [ ] Write Documentation
