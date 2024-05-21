@@ -6,9 +6,13 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"os/exec"
 
+	"github.com/SajjadManafi/android-emulator-serverless/internal/config"
+	"github.com/SajjadManafi/android-emulator-serverless/internal/token"
 	"github.com/gorilla/mux"
 )
 
@@ -21,7 +25,21 @@ type AndroidConfig struct {
 	Status        string `json:"status"`
 }
 
+var DevicesPortMap = map[string]string{}
+
+var TokenMaker token.Maker
+
 func main() {
+
+	config, err := config.InitConfig()
+	if err != nil {
+		log.Fatalf("failed to init config: %v", err)
+	}
+
+	TokenMaker, err = token.NewPasetoMaker(config.Token.SecretKey)
+	if err != nil {
+		log.Fatalf("failed to init token maker: %v", err)
+	}
 
 	r := mux.NewRouter()
 
@@ -29,9 +47,47 @@ func main() {
 	r.HandleFunc("/stop-emulator", StopEmulator)
 	r.HandleFunc("/device-status", DeviceStatus)
 
+	r.PathPrefix("/").Handler(HandleProxy())
+
 	log.Println("Server starting on port 8080...")
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		log.Fatalf("Error starting server: %s", err)
+	}
+}
+
+// NewProxy creates a new reverse proxy for the given target.
+func NewProxy(target string) *httputil.ReverseProxy {
+	url, _ := url.Parse(target)
+	return httputil.NewSingleHostReverseProxy(url)
+}
+
+func HandleProxy() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// get the token from the Authorization header
+		auth := r.Header.Get("Authorization")
+
+		if auth == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// validate token
+		claims, err := TokenMaker.VerifyAccessToken(auth)
+		if err != nil {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		port := DevicesPortMap[claims.Username+"-Device"]
+
+		if port == "" {
+			http.Error(w, "Device not found", http.StatusNotFound)
+			return
+		}
+
+		proxy := NewProxy("http://localhost:" + port)
+		log.Println("Proxying request to: ", "http://localhost:"+port)
+		proxy.ServeHTTP(w, r)
 	}
 }
 
@@ -59,6 +115,8 @@ func RunEmulator(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	DevicesPortMap[android.ContainerName] = portStr
 
 	fmt.Fprintf(w, "Emulator started successfully")
 }
@@ -101,6 +159,8 @@ func StopEmulator(w http.ResponseWriter, r *http.Request) {
 
 		log.Printf("Emulator %s stopped and deleted successfully", containerName)
 	}(android.ContainerName)
+
+	delete(DevicesPortMap, android.ContainerName)
 
 	// Immediately respond to the request
 	fmt.Fprintf(w, "Emulator stop and delete initiated successfully")
