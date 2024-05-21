@@ -47,6 +47,7 @@ func main() {
 	r.HandleFunc("/stop-emulator", StopEmulator)
 	r.HandleFunc("/device-status", DeviceStatus)
 
+	//TODO: maybe ned to run this in another port
 	r.PathPrefix("/").Handler(HandleProxy())
 
 	log.Println("Server starting on port 8080...")
