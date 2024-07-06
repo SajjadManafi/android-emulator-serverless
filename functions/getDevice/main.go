@@ -86,7 +86,8 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	return Response{
 		StatusCode: 200,
 		Headers: map[string]string{
-			"Content-Type": "application/json",
+			"Content-Type":                  "application/json",
+			"Access-Control-Expose-Headers": "Authorization",
 		},
 		Body: string(androidDataJSON),
 	}, nil
