@@ -173,28 +173,14 @@
                                             <p class="text-primary m-0 fw-bold">User Settings</p>
                                         </div>
                                         <div class="card-body">
+                                            <div id="messagePlaceholder"></div>
                                             <form>
                                                 <div class="row">
-                                                    <div class="col">
-                                                        <div class="mb-3"><label class="form-label"
-                                                                for="username"><strong>Username</strong></label><input
-                                                                class="form-control" type="text" id="username"
-                                                                placeholder="Username" name="username"></div>
-                                                    </div>
                                                     <div class="col">
                                                         <div class="mb-3"><label class="form-label"
                                                                 for="email"><strong>Name</strong></label><input
                                                                 class="form-control" type="text" id="name"
                                                                 placeholder="Name" name="name"></div>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col">
-                                                        <div class="mb-3"><label class="form-label"
-                                                                for="old_password"><strong>Old
-                                                                    Password</strong></label><input class="form-control"
-                                                                type="password" id="old_password"
-                                                                placeholder="Old Password" name="old_password"></div>
                                                     </div>
                                                     <div class="col">
                                                         <div class="mb-3"><label class="form-label"
@@ -257,12 +243,6 @@
                         accountUsernameDisplay.textContent = data.username;
                     }
 
-                    // Fill Username field in form
-                    const usernameField = document.getElementById('username');
-                    if (usernameField) {
-                        usernameField.value = data.username;
-                    }
-
                     // Fill Name field in form
                     const nameField = document.getElementById('name');
                     if (nameField) {
@@ -272,6 +252,56 @@
                 .catch(error => {
                     console.error('Error fetching user:', error);
                 });
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('.card-body form');
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault(); // Prevent the form from submitting in the traditional way
+
+                const accessToken = localStorage.getItem('Authorization');
+                if (!accessToken) {
+                    console.error('Access token is not set.');
+                    showMessage('Access token is not set.', 'danger');
+                    return;
+                }
+
+                const name = document.getElementById('name').value;
+                const newPassword = document.getElementById('new_password').value;
+
+                fetch('http://localhost:3000/updateUser', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': accessToken
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        password: newPassword
+                    })
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        console.log('Success:', data);
+                        showMessage('Profile updated successfully!', 'success');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showMessage('Error updating profile.', 'danger');
+                    });
+            });
+
+            function showMessage(message, type) {
+                const messagePlaceholder = document.getElementById('messagePlaceholder');
+                messagePlaceholder.innerHTML = `<div class="alert alert-${type}" role="alert">${message}</div>`;
+                setTimeout(() => messagePlaceholder.innerHTML = '', 5000); // Optional: clear message after 5 seconds
+            }
         });
     </script>
 </body>

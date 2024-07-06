@@ -51,6 +51,15 @@ functions:
       - http:
           path: getUser
           method: get
+  updateUser:
+    handler: bin/updateUser
+    package:
+      include:
+        - bin/updateUser
+    events:
+      - http:
+          path: updateUser
+          method: put
   registerDevice:
     handler: bin/registerDevice
     package:

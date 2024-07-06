@@ -58,6 +58,13 @@ curl -X GET http://0.0.0.0:3000/getUser \
      -H "Authorization:YOUR_ACCESS_TOKEN" 
 ```
 
+### simple update profile request
+```
+curl -X PUT http://0.0.0.0:3000/updateUser \
+     -H "Content-Type: application/json" \
+     -H "Authorization:YOUR_ACCESS_TOKEN" \
+     -d '{"name":"sajjad", "password":"testpass"}'
+```
 
 
 ### simple register device request

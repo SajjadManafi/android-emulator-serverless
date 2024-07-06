@@ -10,6 +10,7 @@ build: clean
 	GOOS=linux GOARCH=amd64 go build -o bin/getDevice functions/getDevice/main.go
 	GOOS=linux GOARCH=amd64 go build -o bin/deleteDevice functions/deleteDevice/main.go
 	GOOS=linux GOARCH=amd64 go build -o bin/getUser functions/getUser/main.go
+	GOOS=linux GOARCH=amd64 go build -o bin/updateUser functions/updateUser/main.go
 
 start:
 	sudo sls offline --useDocker start --host 0.0.0.0
