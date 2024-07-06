@@ -90,3 +90,46 @@ func (s *UserService) GetUser(ctx context.Context, username string) (User, error
 
 	return user, nil
 }
+
+// UpdateUserBalance updates the balance of a user in Redis.
+func (s *UserService) UpdateUserBalance(ctx context.Context, username string, amount int) error {
+	user, err := s.GetUser(ctx, username)
+	if err != nil {
+		return err
+	}
+
+	user.Balance += amount
+
+	userData, err := json.Marshal(user)
+	if err != nil {
+		return err
+	}
+
+	if err := s.redisClient.Set(ctx, username, userData, 0).Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpdateProfile updates the profile of a user in Redis.
+func (s *UserService) UpdateProfile(ctx context.Context, username string, name string, password string) error {
+	user, err := s.GetUser(ctx, username)
+	if err != nil {
+		return err
+	}
+
+	user.Name = name
+	user.Password = password
+
+	userData, err := json.Marshal(user)
+	if err != nil {
+		return err
+	}
+
+	if err := s.redisClient.Set(ctx, username, userData, 0).Err(); err != nil {
+		return err
+	}
+
+	return nil
+}
