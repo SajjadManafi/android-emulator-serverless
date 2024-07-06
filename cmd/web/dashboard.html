@@ -234,30 +234,35 @@
                                         </table>
                                     </div>
                                     <div class="row">
+                                        <div id="alertPlaceholder"></div>
                                         <div class="col">
-                                            <form>
+                                            <form id="deviceForm">
                                                 <div class="row" style="margin-bottom: 0px;">
                                                     <div class="col">
-                                                        <div class="mb-3"><label class="form-label"
-                                                                for="username"><strong>Device</strong></label><select
-                                                                class="form-select">
+                                                        <div class="mb-3">
+                                                            <label class="form-label"
+                                                                for="deviceSelect"><strong>Device</strong></label>
+                                                            <select class="form-select" id="deviceSelect">
                                                                 <optgroup label="This is a group">
                                                                     <option value="12" selected="">Samsung S10</option>
                                                                     <option value="13">Nexus One</option>
                                                                     <option value="14">Nexus 7</option>
                                                                 </optgroup>
-                                                            </select></div>
+                                                            </select>
+                                                        </div>
                                                     </div>
                                                     <div class="col">
-                                                        <div class="mb-3"><label class="form-label"
-                                                                for="email"><strong>Version</strong></label><select
-                                                                class="form-select">
+                                                        <div class="mb-3">
+                                                            <label class="form-label"
+                                                                for="versionSelect"><strong>Version</strong></label>
+                                                            <select class="form-select" id="versionSelect">
                                                                 <optgroup label="This is a group">
                                                                     <option value="12" selected="">API 28</option>
                                                                     <option value="13">API 32</option>
                                                                     <option value="14">API 34</option>
                                                                 </optgroup>
-                                                            </select></div>
+                                                            </select>
+                                                        </div>
                                                     </div>
                                                 </div>
                                                 <div class="mb-3"><button class="btn btn-primary btn-sm"
@@ -304,6 +309,7 @@
                 }
             })
                 .then(response => {
+                    console.log('Response:', response);
                     if (!response.ok && response.status === 404) {
                         updateUIForError(); // Call function to update UI for error or empty data
                     } else {
@@ -311,39 +317,84 @@
                     }
                 })
                 .then(data => {
-                    if (!data || data.length === 0) {
-                        updateUIForError(); // Call function to update UI for error or empty data
+                    console.log('Data:', data);
+                    if (!data) {
+                        updateUIForError(); // Handle null or undefined data
+                        return;
                     }
-                    data.forEach(device => {
-                        const row = document.createElement('tr');
 
-                        const deviceNameCell = document.createElement('td');
-                        deviceNameCell.textContent = device.device_name;
-                        row.appendChild(deviceNameCell);
+                    // Since data is a single object, directly use it to create a table row
+                    const row = document.createElement('tr');
 
-                        const deviceIDCell = document.createElement('td');
-                        deviceIDCell.textContent = device.device_id;
-                        row.appendChild(deviceIDCell);
+                    const deviceNameCell = document.createElement('td');
+                    const deviceNameLink = document.createElement('a');
+                    deviceNameLink.setAttribute('href', 'http://localhost:8080');
+                    deviceNameLink.setAttribute('target', '_blank');
+                    deviceNameLink.textContent = data.device_name;
+                    deviceNameCell.appendChild(deviceNameLink);
+                    row.appendChild(deviceNameCell);
 
-                        const statusCell = document.createElement('td');
-                        statusCell.innerHTML = `<i class="fas fa-circle ${device.status === 'On' ? 'text-success' : 'text-danger'}"></i>&nbsp;${device.status}`;
-                        row.appendChild(statusCell);
+                    const deviceIDCell = document.createElement('td');
+                    deviceIDCell.textContent = data.device_id;
+                    row.appendChild(deviceIDCell);
 
-                        const androidAPICell = document.createElement('td');
-                        androidAPICell.textContent = device.android_api;
-                        row.appendChild(androidAPICell);
+                    const statusCell = document.createElement('td');
+                    statusCell.innerHTML = `<i class="fas fa-circle ${data.status.includes('READY') ? 'text-success' : 'text-danger'}"></i>&nbsp;${data.status}`;
+                    row.appendChild(statusCell);
 
-                        const startTimestampCell = document.createElement('td');
-                        const date = new Date(device.start_timestamp * 1000);
-                        startTimestampCell.textContent = date.toISOString().split('T')[0];
-                        row.appendChild(startTimestampCell);
+                    const androidAPICell = document.createElement('td');
+                    androidAPICell.textContent = data.android_api;
+                    row.appendChild(androidAPICell);
 
-                        const actionsCell = document.createElement('td');
-                        actionsCell.innerHTML = `<button class="btn btn-primary" type="button" style="padding-right: 6px;padding-left: 6px;padding-bottom: 2px;padding-top: 3px;background: rgb(223,87,78);border-radius: 10px;border-width: 0.5px;border-color: rgb(223,87,78);">${device.status === 'On' ? 'Turn Off' : 'Turn On'}</button>`;
-                        row.appendChild(actionsCell);
+                    const startTimestampCell = document.createElement('td');
+                    const date = new Date(data.start_timestamp * 1000);
+                    startTimestampCell.textContent = date.toISOString().split('T')[0];
+                    row.appendChild(startTimestampCell);
 
-                        tableBody.appendChild(row);
-                    });
+                    const billCell = document.createElement('td');
+                    billCell.textContent = "$20"; // Hardcoded bill amount
+                    row.appendChild(billCell);
+
+                    const actionsCell = document.createElement('td');
+                    const deleteButton = document.createElement('button');
+                    deleteButton.className = "btn btn-primary";
+                    deleteButton.style = "padding-right: 6px;padding-left: 6px;padding-bottom: 2px;padding-top: 3px;background: rgb(223,87,78);border-radius: 10px;border-width: 0.5px;border-color: rgb(223,87,78);";
+                    deleteButton.textContent = "Delete";
+                    deleteButton.onclick = function () {
+                        const accessToken = localStorage.getItem('Authorization');
+                        if (!accessToken) {
+                            console.error('Access token is not set.');
+                            displayAlert('Access token is not set.', 'danger');
+                            return;
+                        }
+
+                        fetch('http://localhost:3000/deleteDevice', {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': accessToken
+                            }
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.text();
+                            })
+                            .then(data => {
+                                console.log('Device deleted successfully:', data);
+                                displayAlert('Device deleted successfully!', 'success');
+                                // Optionally, remove the row from the table or refresh the table
+                                row.remove();
+                            })
+                            .catch(error => {
+                                console.error('Error deleting device:', error);
+                                displayAlert('Error deleting device.', 'danger');
+                            });
+                    };
+                    actionsCell.appendChild(deleteButton);
+                    row.appendChild(actionsCell);
+
+                    tableBody.appendChild(row);
                 })
                 .catch(error => {
                     console.error('Error fetching devices:', error);
@@ -386,6 +437,63 @@
                     console.error('Error fetching user:', error);
                 });
         });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('deviceForm');
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault(); // Prevent the form from submitting in the traditional way
+
+                const accessToken = localStorage.getItem('Authorization');
+                if (!accessToken) {
+                    console.error('Access token is not set.');
+                    displayAlert('Access token is not set.', 'danger');
+                    return;
+                }
+
+                const deviceName = document.getElementById('deviceSelect').selectedOptions[0].text;
+                let apiLevel = document.getElementById('versionSelect').selectedOptions[0].text;
+                // Convert all API levels to "emulator_9.0"
+                apiLevel = 'emulator_9.0';
+
+                fetch('http://localhost:3000/registerDevice', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': accessToken
+                    },
+                    body: JSON.stringify({
+                        android_api: apiLevel,
+                        device_name: deviceName
+                    })
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.text();
+                    })
+                    .then(data => {
+                        console.log('Success:', data);
+                        displayAlert('Device created successfully!', 'success');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        displayAlert('Error creating device.', 'danger');
+                    });
+            });
+
+            function displayAlert(message, type) {
+                const alertPlaceholder = document.getElementById('alertPlaceholder');
+                const alert = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>`;
+                alertPlaceholder.innerHTML = alert;
+            }
+        });
+
+
 
         function updateUIForError() {
             // Update the text to show "0 of 1"

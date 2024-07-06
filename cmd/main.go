@@ -108,7 +108,7 @@ func RunEmulator(w http.ResponseWriter, r *http.Request) {
 
 	portStr := fmt.Sprintf("%d", android.Port)
 	servicePort := fmt.Sprintf("%d", 6080)
-	cmd := exec.Command("docker", "run", "-d", "-p", portStr+":"+servicePort, "-e", "EMULATOR_DEVICE="+android.DeviceName, "-e", "WEB_VNC=true", "--device", "/dev/kvm", "--name", android.ContainerName, "budtmo/docker-android:"+android.AndroidAPI)
+	cmd := exec.Command("sudo", "docker", "run", "-d", "-p", portStr+":"+servicePort, "-e", "EMULATOR_DEVICE="+android.DeviceName, "-e", "WEB_VNC=true", "--device", "/dev/kvm", "--name", android.ContainerName, "docker.arvancloud.ir/budtmo/docker-android:"+android.AndroidAPI)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err := cmd.Run()
@@ -139,7 +139,7 @@ func StopEmulator(w http.ResponseWriter, r *http.Request) {
 	// Run stop and remove commands in a goroutine
 	go func(containerName string) {
 		// Stop the container
-		stopCmd := exec.Command("docker", "stop", containerName)
+		stopCmd := exec.Command("sudo", "docker", "stop", containerName)
 		stopCmd.Stdout = os.Stdout
 		stopCmd.Stderr = os.Stderr
 		err := stopCmd.Run()
@@ -179,7 +179,7 @@ func DeviceStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cmd := exec.Command("docker", "exec", "-i", containerName, "cat", "device_status")
+	cmd := exec.Command("sudo", "docker", "exec", "-i", containerName, "cat", "device_status")
 	// Removing the '-t' option because it's not suitable for non-interactive sessions like this
 	var out bytes.Buffer
 	cmd.Stdout = &out
