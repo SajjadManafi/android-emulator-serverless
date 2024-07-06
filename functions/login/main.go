@@ -76,7 +76,8 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 		StatusCode: 200,
 		Body:       "successful login",
 		Headers: map[string]string{
-			"Authorization": token,
+			"Authorization":                 token,
+			"Access-Control-Expose-Headers": "Authorization",
 		},
 	}, nil
 
