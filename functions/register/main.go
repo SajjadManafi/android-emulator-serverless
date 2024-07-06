@@ -32,6 +32,9 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 		}, nil
 	}
 
+	// set default balance
+	user.Balance = 150
+
 	err = UserService.RegisterUser(context.Background(), user)
 	if err != nil {
 		if err == redis.ErrUserExists {

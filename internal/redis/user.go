@@ -16,6 +16,7 @@ type User struct {
 	Name     string `json:"name" redis:"name"`
 	UserName string `json:"username" redis:"username"`
 	Password string `json:"password" redis:"password"`
+	Balance  int    `json:"balance" redis:"balance"`
 }
 
 var ErrUserExists = errors.New("user already exists")
