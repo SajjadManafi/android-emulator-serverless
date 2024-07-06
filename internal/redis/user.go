@@ -73,3 +73,20 @@ func (s *UserService) LoginUser(ctx context.Context, username, password string) 
 
 	return true, nil
 }
+
+// GetUser retrieves a user from Redis by username.
+func (s *UserService) GetUser(ctx context.Context, username string) (User, error) {
+	result, err := s.redisClient.Get(ctx, username).Result()
+	if err == redis.Nil {
+		return User{}, ErrUserNotFound
+	} else if err != nil {
+		return User{}, err
+	}
+
+	var user User
+	if err := json.Unmarshal([]byte(result), &user); err != nil {
+		return User{}, err
+	}
+
+	return user, nil
+}

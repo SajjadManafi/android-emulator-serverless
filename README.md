@@ -52,6 +52,13 @@ curl -i -X POST http://0.0.0.0:3000/login \
      -d '{"username":"sajjadma","password":"testpass"}'
 ```
 
+### simple get user request
+```
+curl -X GET http://0.0.0.0:3000/getUser \
+     -H "Authorization:YOUR_ACCESS_TOKEN" 
+```
+
+
 
 ### simple register device request
 ```

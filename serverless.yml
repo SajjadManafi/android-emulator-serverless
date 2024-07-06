@@ -42,6 +42,15 @@ functions:
       - http:
           path: login
           method: post
+  getUser:
+    handler: bin/getUser
+    package:
+      include:
+        - bin/getUser
+    events:
+      - http:
+          path: getUser
+          method: get
   registerDevice:
     handler: bin/registerDevice
     package:
