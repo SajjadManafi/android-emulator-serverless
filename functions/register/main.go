@@ -19,7 +19,6 @@ var TokenMaker token.Maker
 
 func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	req := request.Body
-	log.Printf("request: %v", req)
 
 	// unmarshal json request to user
 	user := redis.User{}
@@ -28,7 +27,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	if err != nil {
 		return Response{
 			StatusCode: 400,
-			Body:       "invalid request",
+			Body:       "Invalid request. Please provide a valid JSON payload.",
 		}, nil
 	}
 
@@ -40,18 +39,18 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 		if err == redis.ErrUserExists {
 			return Response{
 				StatusCode: 400,
-				Body:       "user already exists",
+				Body:       "User already exists. Please choose a different username.",
 			}, nil
 		}
 		return Response{
 			StatusCode: 500,
-			Body:       err.Error(),
+			Body:       "Internal server error. Please try again later.",
 		}, nil
 	}
 
 	return Response{
 		StatusCode: 200,
-		Body:       "user created",
+		Body:       "User successfully registered.",
 	}, nil
 }
 

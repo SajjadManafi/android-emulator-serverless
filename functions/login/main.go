@@ -18,9 +18,7 @@ var UserService *redis.UserService
 var TokenMaker token.Maker
 
 func Handler(request events.APIGatewayProxyRequest) (Response, error) {
-
 	req := request.Body
-	log.Printf("request: %v", req)
 
 	// unmarshal json request to user
 	user := redis.User{}
@@ -29,7 +27,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	if err != nil {
 		return Response{
 			StatusCode: 400,
-			Body:       "invalid request",
+			Body:       "Invalid request. Please provide valid JSON.",
 		}, nil
 	}
 
@@ -39,18 +37,18 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 		if err == redis.ErrInvalidCredentials {
 			return Response{
 				StatusCode: 401,
-				Body:       "invalid credentials",
+				Body:       "Invalid credentials. Please check your username and password.",
 			}, nil
 		} else if err == redis.ErrUserNotFound {
 			return Response{
 				StatusCode: 404,
-				Body:       "user not found",
+				Body:       "User not found. Please register an account.",
 			}, nil
 		}
 
 		return Response{
 			StatusCode: 500,
-			Body:       err.Error(),
+			Body:       "Internal server error. Please try again later.",
 		}, nil
 
 	}
@@ -58,7 +56,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	if !ok {
 		return Response{
 			StatusCode: 401,
-			Body:       "invalid credentials",
+			Body:       "Invalid credentials. Please check your username and password.",
 		}, nil
 	}
 
@@ -67,14 +65,14 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	if err != nil {
 		return Response{
 			StatusCode: 500,
-			Body:       err.Error(),
+			Body:       "Internal server error. Please try again later.",
 		}, nil
 	}
 
 	// return token as authorization in header
 	return Response{
 		StatusCode: 200,
-		Body:       "successful login",
+		Body:       "Successful login.",
 		Headers: map[string]string{
 			"Authorization":                 token,
 			"Access-Control-Expose-Headers": "Authorization",

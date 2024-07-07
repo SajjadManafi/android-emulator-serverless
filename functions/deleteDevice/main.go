@@ -22,10 +22,7 @@ var TokenMaker token.Maker
 var AndroidService *redis.AndroidService
 
 func Handler(request events.APIGatewayProxyRequest) (Response, error) {
-	req := request.Body
-	log.Println("request: ", req)
 	head := request.Headers
-	log.Println("headers: ", head)
 
 	ctx := context.Background()
 
@@ -34,7 +31,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	if !ok {
 		return Response{
 			StatusCode: 401,
-			Body:       "unauthorized",
+			Body:       "Unauthorized: Missing Authorization header",
 		}, nil
 	}
 
@@ -43,7 +40,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	if err != nil {
 		return Response{
 			StatusCode: 401,
-			Body:       "unauthorized",
+			Body:       "Unauthorized: Invalid access token",
 		}, nil
 	}
 
@@ -53,12 +50,12 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 		if err == redis.ErrNotFound {
 			return Response{
 				StatusCode: 404,
-				Body:       "device not found",
+				Body:       "Not Found: Device not found",
 			}, nil
 		}
 		return Response{
 			StatusCode: 500,
-			Body:       "internal server error",
+			Body:       "Internal Server Error: Failed to delete device",
 		}, nil
 	}
 
@@ -67,7 +64,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	if err != nil {
 		return Response{
 			StatusCode: 500,
-			Body:       "internal server error",
+			Body:       "Internal Server Error: Failed to stop emulator",
 		}, nil
 	}
 
@@ -76,15 +73,14 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	if err != nil {
 		return Response{
 			StatusCode: 500,
-			Body:       "internal server error",
+			Body:       "Internal Server Error: Failed to delete device",
 		}, nil
 	}
 
 	return Response{
 		StatusCode: 200,
-		Body:       "device deleted",
+		Body:       "Success: Device deleted",
 	}, nil
-
 }
 
 func main() {

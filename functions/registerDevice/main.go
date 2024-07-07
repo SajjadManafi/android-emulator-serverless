@@ -24,9 +24,7 @@ var AndroidService *redis.AndroidService
 
 func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	req := request.Body
-	log.Println("request: ", req)
 	head := request.Headers
-	log.Println("headers: ", head)
 
 	ctx := context.Background()
 
@@ -37,38 +35,38 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	if err != nil {
 		return Response{
 			StatusCode: 400,
-			Body:       "invalid request",
+			Body:       "Invalid request: unable to parse JSON",
 		}, nil
 	}
 
-	// check Authorization in headers
+	// Check Authorization in headers
 	auth, ok := head["Authorization"]
 	if !ok {
 		return Response{
 			StatusCode: 401,
-			Body:       "unauthorized",
+			Body:       "Unauthorized: missing Authorization header",
 		}, nil
 	}
 
-	// validate token
+	// Validate token
 	claims, err := TokenMaker.VerifyAccessToken(auth)
 	if err != nil {
 		return Response{
 			StatusCode: 401,
-			Body:       "unauthorized",
+			Body:       "Unauthorized: invalid access token",
 		}, nil
 	}
 
-	// random port
+	// Get random port
 	port, err := AndroidService.GetRandomPort(ctx)
 	if err != nil {
 		return Response{
 			StatusCode: 500,
-			Body:       err.Error(),
+			Body:       "Internal Server Error: failed to get random port",
 		}, nil
 	}
 
-	// TODO: check if user has registered
+	// TODO: Check if user has already registered
 
 	android = redis.Android{
 		DeviceID:       claims.Username + "-Device",
@@ -80,37 +78,37 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 		Status:         "pending",
 	}
 
-	// register android
+	// Register android
 	err = AndroidService.RegisterAndroid(ctx, android)
 	if err != nil {
 		if err == redis.ErrAlreadyExists {
 			return Response{
 				StatusCode: 409,
-				Body:       "android already exists",
+				Body:       "Conflict: android device already exists",
 			}, nil
 		}
 
 		return Response{
 			StatusCode: 500,
-			Body:       err.Error(),
+			Body:       "Internal Server Error: failed to register android device",
 		}, nil
 	}
 
-	// return success in json with android device
+	// Return success in JSON with android device
 	res, err := json.Marshal(android)
 	if err != nil {
 		return Response{
 			StatusCode: 500,
-			Body:       err.Error(),
+			Body:       "Internal Server Error: failed to marshal response",
 		}, nil
 	}
 
-	// run docker
+	// Run docker
 	err = runDockerAndroidEmulator(android.DeviceID, port, android.DeviceName, android.AndroidAPI)
 	if err != nil {
 		return Response{
 			StatusCode: 500,
-			Body:       err.Error(),
+			Body:       "Internal Server Error: failed to run docker android emulator",
 		}, nil
 	}
 

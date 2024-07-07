@@ -19,7 +19,6 @@ var TokenMaker token.Maker
 
 func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	req := request.Body
-	log.Printf("request: %v", req)
 
 	head := request.Headers
 
@@ -28,7 +27,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	if !ok {
 		return Response{
 			StatusCode: 401,
-			Body:       "unauthorized",
+			Body:       "Unauthorized: Missing Authorization header",
 		}, nil
 	}
 
@@ -37,7 +36,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	if err != nil {
 		return Response{
 			StatusCode: 401,
-			Body:       "unauthorized",
+			Body:       "Unauthorized: Invalid access token",
 		}, nil
 	}
 
@@ -48,7 +47,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	if err != nil {
 		return Response{
 			StatusCode: 400,
-			Body:       "invalid request",
+			Body:       "Bad Request: Invalid JSON format",
 		}, nil
 	}
 
@@ -56,13 +55,13 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	if err != nil {
 		return Response{
 			StatusCode: 500,
-			Body:       "internal server error",
+			Body:       "Internal Server Error: Failed to update profile",
 		}, nil
 	}
 
 	return Response{
 		StatusCode: 200,
-		Body:       "profile updated",
+		Body:       "Profile updated successfully",
 	}, nil
 }
 

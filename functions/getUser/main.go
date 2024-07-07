@@ -18,10 +18,7 @@ var UserService *redis.UserService
 var TokenMaker token.Maker
 
 func Handler(request events.APIGatewayProxyRequest) (Response, error) {
-	req := request.Body
-	log.Println("request: ", req)
 	head := request.Headers
-	log.Println("headers: ", head)
 
 	ctx := context.Background()
 
@@ -30,7 +27,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	if !ok {
 		return Response{
 			StatusCode: 401,
-			Body:       "unauthorized",
+			Body:       "Unauthorized: Missing Authorization header",
 		}, nil
 	}
 
@@ -39,7 +36,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	if err != nil {
 		return Response{
 			StatusCode: 401,
-			Body:       "unauthorized",
+			Body:       "Unauthorized: Invalid token",
 		}, nil
 	}
 
@@ -48,7 +45,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	if err != nil {
 		return Response{
 			StatusCode: 404,
-			Body:       "user not found",
+			Body:       "User not found",
 		}, nil
 	}
 
@@ -56,7 +53,7 @@ func Handler(request events.APIGatewayProxyRequest) (Response, error) {
 	if err != nil {
 		return Response{
 			StatusCode: 500,
-			Body:       "internal server error",
+			Body:       "Internal server error",
 		}, nil
 	}
 
