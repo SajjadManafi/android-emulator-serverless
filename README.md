@@ -95,11 +95,7 @@ curl -X DELETE http://0.0.0.0:3000/deleteDevice \
 ### TODO:
 
 
-- [ ] Web Interface
-- [ ] TLS
+- [X] Web Interface
+- [X] TLS
 - [X] Emulator Auth (Reverse Proxy)
-- [ ] Edit Emulator docker images
-- [ ] Write Documentation
-- [ ] Write Tests
-- [ ] Write comments for code
-- [ ] Deploy 
+- [X] Write Documentation
